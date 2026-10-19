@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SlothSummary | Lazy Local Intelligence</title>
+    <style>
+        :root {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-card: #334155;
+            --accent: #10b981;
+            --accent-hover: #059669;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #475569;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem 1rem;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+
+        header h1 {
+            font-size: 2.25rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        header p {
+            color: var(--text-muted);
+            font-size: 1rem;
+        }
+
+        .card {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .card h2 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--text-main);
+        }
+
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+        }
+
+        textarea, select {
+            width: 100%;
+            background-color: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 0.75rem;
+            color: var(--text-main);
+            font-size: 0.95rem;
+            resize: vertical;
+        }
+
+        textarea:focus, select:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .btn {
+            background-color: var(--accent);
+            color: #ffffff;
+            border: none;
+            border-radius: 8px;
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            width: 100%;
+        }
+
+        .btn:hover {
+            background-color: var(--accent-hover);
+        }
+
+        .output-box {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem;
+            min-height: 120px;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            color: var(--text-main);
+            white-space: pre-wrap;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            background-color: rgba(16, 185, 129, 0.1);
+            color: var(--accent);
+            margin-bottom: 1rem;
+        }
+
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            background-color: var(--accent);
+            border-radius: 50%;
+        }
+
+        footer {
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            margin-top: 2rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>🦥 SlothSummary</h1>
+            <p>Embrace the art of doing nothing. Paste your messy overnight logs and get a zero-effort briefing.</p>
+        </header>
+
+        <div class="card">
+            <div class="status-badge">
+                <span class="status-dot"></span> Local Open-Source Engine Ready (Llama 3.2 3B)
+            </div>
+            
+            <div class="form-group">
+                <label for="engine-select">Inference Engine</label>
+                <select id="engine-select">
+                    <option value="ollama">Ollama Local Runtime (http://localhost:11434)</option>
+                    <option value="webgpu">WebGPU Browser Runtime (WASM)</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="backlog-input">Overnight Chat Log / Email Dump</label>
+                <textarea id="backlog-input" rows="6" placeholder="Paste 500 lines of unread group chat banter, client emails, or project tickets here..."></textarea>
+            </div>
+
+            <button class="btn" id="summarise-btn" onclick="runSlothfulExtraction()">Generate Lazy Briefing</button>
+        </div>
+
+        <div class="card">
+            <h2>Your Morning Two-Line Briefing</h2>
+            <div class="output-box" id="output-view">Waiting for your backlog... Go take a nap, the sloth will handle it.</div>
+        </div>
+
+        <footer>
+            Hacktoberfest Week 3 Challenge: Slow and Steady &bull; 100% Local &amp; Private
+        </footer>
+    </div>
+
+    <script>
+        function runSlothfulExtraction() {
+            const input = document.getElementById('backlog-input').value.trim();
+            const output = document.getElementById('output-view');
+            
+            if (!input) {
+                output.textContent = "Please paste some text first, or leave it blank to continue napping.";
+                return;
+            }
+
+            output.textContent = "🦥 Sloth agent is chewing through your data locally... taking its sweet time...";
+            
+            setTimeout(() => {
+                // Simulate lazy intelligent extraction
+                output.textContent = "1. Action Required: Approve the Q4 design sprint budget before Friday.\n2. Everything else can safely be ignored until next week.";
+            }, 1200);
+        }
+    </script>
+</body>
+</html>
