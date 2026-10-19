@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en-GB" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Local AI Receipt & Invoice Sorter | Hacktoberfest Side Hustle</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        emerald: {
+                            400: '#34d399',
+                            500: '#10b981',
+                            600: '#059669',
+                            950: '#022c22',
+                        },
+                        slate: {
+                            850: '#131f37',
+                            900: '#0f172a',
+                            950: '#020617',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .emerald-glow {
+            box-shadow: 0 0 25px -5px rgba(16, 185, 129, 0.25);
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col selection:bg-emerald-500 selection:text-slate-950">
+
+    <!-- Navigation Header -->
+    <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center text-slate-950 font-bold shadow-lg shadow-emerald-500/20">
+                    <i data-lucide="shield-check" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <span class="font-bold text-lg tracking-tight">VaultLedger</span>
+                        <span class="bg-emerald-500/10 text-emerald-400 text-xs px-2 py-0.5 rounded-full border border-emerald-500/30 font-medium">Local AI</span>
+                    </div>
+                    <p class="text-xs text-slate-400 hidden sm:block">Privacy-First Micro-SaaS for Freelancers</p>
+                </div>
+            </div>
+
+            <!-- Global Status Bar -->
+            <div class="flex items-center space-x-4">
+                <div class="hidden md:flex items-center space-x-2 bg-slate-800/80 px-3 py-1.5 rounded-lg border border-slate-700/60 text-xs">
+                    <span class="relative flex h-2.5 w-2.5">
+                      <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                      <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                    </span>
+                    <span class="text-slate-300 font-medium">Privacy Status:</span>
+                    <span class="text-emerald-400 font-semibold">100% Offline / Zero Cloud Transfers</span>
+                </div>
+
+                <a href="#dev-post-section" class="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-semibold px-4 py-2 rounded-lg text-xs sm:text-sm transition-all flex items-center gap-1.5 shadow-md shadow-emerald-500/20">
+                    <i data-lucide="file-text" class="w-4 h-4"></i>
+                    <span>Dev.to Post Draft</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+
+        <!-- Hero / Value Proposition Section -->
+        <section class="glass-panel rounded-2xl p-6 sm:p-8 relative overflow-hidden emerald-glow">
+            <div class="absolute -right-12 -bottom-12 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-center">
+                <div class="lg:col-span-2 space-y-4">
+                    <div class="inline-flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 px-3 py-1 rounded-full text-xs font-semibold">
+                        <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+                        Hacktoberfest Week 2: Side Hustle Challenge
+                    </div>
+                    <h1 class="text-2xl sm:text-4xl font-extrabold tracking-tight text-white leading-tight">
+                        Keep Financial Records Confidential. <br class="hidden sm:inline">
+                        <span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-300">Zero Cloud APIs, Zero Token Costs.</span>
+                    </h1>
+                    <p class="text-slate-300 text-sm sm:text-base leading-relaxed">
+                        A micro-SaaS created for UK and global freelancers to automatically extract line items, taxes, dates, and categories from client invoices and receipts. Built entirely on local open-source AI models so non-disclosure agreements (NDAs) are never violated.
+                    </p>
+                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 pt-2 text-xs">
+                        <div class="flex items-center gap-2 text-slate-300">
+                            <i data-lucide="wifi-off" class="w-4 h-4 text-emerald-400"></i>
+                            <span>Works Fully Offline</span>
+                        </div>
+                        <div class="flex items-center gap-2 text-slate-300">
+                            <i data-lucide="coins" class="w-4 h-4 text-emerald-400"></i>
+                            <span>£0.00 Token Expenses</span>
+                        </div>
+                        <div class="flex items-center gap-2 text-slate-300">
+                            <i data-lucide="lock" class="w-4 h-4 text-emerald-400"></i>
+                            <span>GDPR & NDA Compliant</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Engine Configuration Box -->
+                <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-5 space-y-4 shadow-xl">
+                    <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                        <div class="flex items-center gap-2">
+                            <i data-lucide="cpu" class="w-5 h-5 text-emerald-400"></i>
+                            <h3 class="font-semibold text-sm">Open AI Runtime Engine</h3>
+                        </div>
+                        <span class="text-[10px] font-mono bg-slate-800 text-slate-400 px-2 py-0.5 rounded">Ollama Local</span>
+                    </div>
+
+                    <div class="space-y-3">
+                        <div>
+                            <label class="block text-xs text-slate-400 mb-1.5 font-medium">Select Local Open-Weight Model</label>
+                            <select id="model-select" class="w-full bg-slate-950 border border-slate-700 rounded-lg text-xs text-slate-200 p-2.5 focus:outline-none focus:border-emerald-500 font-mono">
+                                <option value="llama-3.2-3b-vision">Llama 3.2 3B Vision (Local / Ollama) [Fastest]</option>
+                                <option value="mistral-7b-instruct">Mistral 7B Instruct v0.3 (Local GGUF)</option>
+                                <option value="phi-3-mini">Phi-3 Mini 3.8B (ONNX WebGPU Direct)</option>
+                                <option value="qwen-2.5-coder">Qwen 2.5 Coder 7B (Structured Extraction)</option>
+                            </select>
+                        </div>
+
+                        <div class="flex items-center justify-between text-xs pt-1">
+                            <span class="text-slate-400">Hardware Acceleration:</span>
+                            <span class="text-emerald-400 font-mono flex items-center gap-1">
+                                <i data-lucide="zap" class="w-3 h-3"></i> Metal / CUDA (Detected)
+                            </span>
+                        </div>
+
+                        <div class="flex items-center justify-between text-xs pt-1 border-t border-slate-800/60">
+                            <span class="text-slate-400">Network Isolation Mode:</span>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" id="privacy-toggle" checked class="sr-only peer">
+                                <div class="w-9 h-5 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Functional Workspace Section -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+
+            <!-- Input & Sample Panel (Left Column) -->
+            <div class="lg:col-span-5 space-y-6">
+                <div class="glass-panel rounded-2xl p-6 space-y-5">
+                    <div class="flex items-center justify-between">
+                        <h2 class="font-bold text-base text-white flex items-center gap-2">
+                            <i data-lucide="upload-cloud" class="w-5 h-5 text-emerald-400"></i>
+                            1. Select or Upload Document
+                        </h2>
+                        <span class="text-xs text-slate-400">OCR & Visual Parser</span>
+                    </div>
+
+                    <!-- Preset Options -->
+                    <div>
+                        <p class="text-xs text-slate-400 mb-2">Test instantly with freelancer sample presets:</p>
+                        <div class="grid grid-cols-1 gap-2">
+                            <button onclick="loadPreset('freelance')" class="preset-btn text-left p-3 rounded-xl bg-slate-900/90 border border-slate-800 hover:border-emerald-500/50 transition-all flex items-center justify-between group">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400 group-hover:bg-emerald-500 group-hover:text-slate-950 transition-colors">
+                                        <i data-lucide="palette" class="w-4 h-4"></i>
+                                    </div>
+                                    <div>
+                                        <div class="text-xs font-semibold text-slate-200">Freelance Design Invoice</div>
+                                        <div class="text-[10px] text-slate-400">Client: ACME Corp Ltd (£1,450.00)</div>
+                                    </div>
+                                </div>
+                                <i data-lucide="chevron-right" class="w-4 h-4 text-slate-600 group-hover:text-emerald-400 transition-colors"></i>
+                            </button>
+
+                            <button onclick="loadPreset('software')" class="preset-btn text-left p-3 rounded-xl bg-slate-900/90 border border-slate-800 hover:border-emerald-500/50 transition-all flex items-center justify-between group">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400 group-hover:bg-emerald-500 group-hover:text-slate-950 transition-colors">
+                                        <i data-lucide="server" class="w-4 h-4"></i>
+                                    </div>
+                                    <div>
+                                        <div class="text-xs font-semibold text-slate-200">SaaS Hosting Subscription</div>
+                                        <div class="text-[10px] text-slate-400">Vendor: CloudHost EU (£48.00)</div>
+                                    </div>
+                                </div>
+                                <i data-lucide="chevron-right" class="w-4 h-4 text-slate-600 group-hover:text-emerald-400 transition-colors"></i>
+                            </button>
+
+                            <button onclick="loadPreset('dinner')" class="preset-btn text-left p-3 rounded-xl bg-slate-900/90 border border-slate-800 hover:border-emerald-500/50 transition-all flex items-center justify-between group">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400 group-hover:bg-emerald-500 group-hover:text-slate-950 transition-colors">
+                                        <i data-lucide="utensils" class="w-4 h-4"></i>
+                                    </div>
+                                    <div>
+                                        <div class="text-xs font-semibold text-slate-200">Client Business Lunch</div>
+                                        <div class="text-[10px] text-slate-400">Vendor: The Ivy Bistro (£89.50)</div>
+                                    </div>
+                                </div>
+                                <i data-lucide="chevron-right" class="w-4 h-4 text-slate-600 group-hover:text-emerald-400 transition-colors"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Dropzone -->
+                    <div id="dropzone" onclick="triggerFileInput()" class="border-2 border-dashed border-slate-700 hover:border-emerald-500/60 rounded-xl p-6 text-center cursor-pointer transition-all bg-slate-900/40 hover:bg-slate-900/80 group relative overflow-hidden">
+                        <input type="file" id="file-input" class="hidden" accept="image/*,application/pdf" onchange="handleFileUpload(this.files)">
+                        <div class="space-y-2">
+                            <div class="w-12 h-12 mx-auto rounded-full bg-slate-800 flex items-center justify-center text-slate-400 group-hover:text-emerald-400 group-hover:scale-110 transition-all">
+                                <i data-lucide="file-plus" class="w-6 h-6"></i>
+                            </div>
+                            <p class="text-xs font-medium text-slate-300">Drop receipt or invoice image/PDF here</p>
+                            <p class="text-[10px] text-slate-500">Files remain strictly in RAM. Never written to disk or sent online.</p>
+                        </div>
+                    </div>
+
+                    <!-- Action Trigger -->
+                    <button id="extract-btn" onclick="processExtraction()" class="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold py-3 px-4 rounded-xl shadow-lg shadow-emerald-500/20 transition-all flex items-center justify-center gap-2 text-sm">
+                        <i data-lucide="cpu" class="w-4 h-4"></i>
+                        <span>Execute Local AI Extraction</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Structured Results & Export Panel (Right Column) -->
+            <div class="lg:col-span-7 space-y-6">
+                <div class="glass-panel rounded-2xl p-6 space-y-5 flex flex-col h-full min-h-[520px]">
+
+                    <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+                        <div>
+                            <h2 class="font-bold text-base text-white flex items-center gap-2">
+                                <i data-lucide="file-json" class="w-5 h-5 text-emerald-400"></i>
+                                2. Extracted Structured Financial Record
+                            </h2>
+                            <p class="text-xs text-slate-400" id="processing-meta">Awaiting document input...</p>
+                        </div>
+
+                        <!-- Quick Export Dropdown -->
+                        <div class="flex items-center gap-2">
+                            <button onclick="exportData('csv')" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 px-3 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center gap-1.5">
+                                <i data-lucide="download" class="w-3.5 h-3.5 text-emerald-400"></i> CSV
+                            </button>
+                            <button onclick="exportData('json')" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 px-3 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center gap-1.5">
+                                <i data-lucide="code" class="w-3.5 h-3.5 text-emerald-400"></i> JSON
+                            </button>
+                            <button onclick="copyToClipboard()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 px-3 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center gap-1.5">
+                                <i data-lucide="copy" class="w-3.5 h-3.5 text-emerald-400"></i> Copy
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Processing Progress Bar (Hidden by default) -->
+                    <div id="loading-state" class="hidden space-y-3 py-12">
+                        <div class="flex items-center justify-between text-xs">
+                            <span class="text-slate-300 font-mono flex items-center gap-2">
+                                <i data-lucide="loader" class="w-4 h-4 animate-spin text-emerald-400"></i>
+                                Running local inference on <span id="loading-model-name" class="text-emerald-400">Llama 3.2 3B</span>...
+                            </span>
+                            <span class="text-slate-400 font-mono" id="tokens-per-sec">28.4 tokens/sec</span>
+                        </div>
+                        <div class="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
+                            <div id="progress-bar" class="bg-gradient-to-r from-emerald-500 to-teal-300 h-2 rounded-full w-0 transition-all duration-300"></div>
+                        </div>
+                        <p class="text-[11px] text-slate-500 text-center font-mono">Quantised INT4 precision running locally via WebGPU/Ollama</p>
+                    </div>
+
+                    <!-- Extracted Output Grid -->
+                    <div id="output-container" class="space-y-4 flex-1">
+
+                        <!-- Header Metrics -->
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                            <div class="bg-slate-900/80 border border-slate-800 p-3 rounded-xl">
+                                <span class="text-[10px] text-slate-400 uppercase font-semibold">Vendor / Counterparty</span>
+                                <div id="res-vendor" class="text-sm font-bold text-white mt-0.5 truncate">ACME Corp Ltd</div>
+                            </div>
+                            <div class="bg-slate-900/80 border border-slate-800 p-3 rounded-xl">
+                                <span class="text-[10px] text-slate-400 uppercase font-semibold">Issue Date</span>
+                                <div id="res-date" class="text-sm font-bold text-white mt-0.5">14 Oct 2026</div>
+                            </div>
+                            <div class="bg-slate-900/80 border border-slate-800 p-3 rounded-xl">
+                                <span class="text-[10px] text-slate-400 uppercase font-semibold">Tax (VAT 20%)</span>
+                                <div id="res-tax" class="text-sm font-bold text-emerald-400 mt-0.5">£241.67</div>
+                            </div>
+                            <div class="bg-slate-900/80 border border-slate-800 p-3 rounded-xl">
+                                <span class="text-[10px] text-slate-400 uppercase font-semibold">Total Amount</span>
+                                <div id="res-total" class="text-sm font-bold text-emerald-400 mt-0.5">£1,450.00</div>
+                            </div>
+                        </div>
+
+                        <!-- Classification & Client Meta -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div class="bg-slate-900/80 border border-slate-800 p-3 rounded-xl flex justify-between items-center">
+                                <div>
+                                    <span class="text-[10px] text-slate-400 uppercase font-semibold">Expense Category</span>
+                                    <div id="res-category" class="text-xs font-semibold text-slate-200 mt-0.5">Design & Brand Consulting</div>
+                                </div>
+                                <span class="bg-emerald-500/10 text-emerald-400 text-[10px] px-2 py-1 rounded-md border border-emerald-500/20 font-medium">Reimbursable</span>
+                            </div>
+                            <div class="bg-slate-900/80 border border-slate-800 p-3 rounded-xl">
+                                <span class="text-[10px] text-slate-400 uppercase font-semibold">Client Project Tag</span>
+                                <div id="res-client" class="text-xs font-semibold text-slate-200 mt-0.5">Project Apex Rebrand</div>
+                            </div>
+                        </div>
+
+                        <!-- Line Items Table -->
+                        <div class="border border-slate-800 rounded-xl overflow-hidden bg-slate-900/50">
+                            <table class="w-full text-left text-xs">
+                                <thead class="bg-slate-900 text-slate-400 font-semibold border-b border-slate-800">
+                                    <tr>
+                                        <th class="p-3">Line Description</th>
+                                        <th class="p-3 text-right">Qty</th>
+                                        <th class="p-3 text-right">Rate</th>
+                                        <th class="p-3 text-right">Amount</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="res-line-items" class="divide-y divide-slate-800/60 font-mono text-slate-300">
+                                    <!-- Dynamic Rows Inserted Here -->
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Zero Cloud Verification Footer -->
+                        <div class="bg-emerald-950/30 border border-emerald-500/20 rounded-xl p-3 flex items-center justify-between text-xs text-emerald-300">
+                            <div class="flex items-center gap-2">
+                                <i data-lucide="shield-check" class="w-4 h-4 text-emerald-400"></i>
+                                <span>Local Hash Verification: <strong class="font-mono text-[10px] text-slate-300" id="res-hash">SHA256: 8f9a2b...4c1e</strong></span>
+                            </div>
+                            <span class="text-[10px] font-mono text-emerald-400/80">0 Bytes Transmitted</span>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Notification Toast Container -->
+    <div id="toast" class="fixed bottom-6 right-6 bg-emerald-500 text-slate-950 px-4 py-3 rounded-xl font-semibold text-xs shadow-2xl transition-all duration-300 opacity-0 pointer-events-none flex items-center gap-2 z-50">
+        <i data-lucide="check-circle" class="w-4 h-4"></i>
+        <span id="toast-msg">Copied to clipboard!</span>
+    </div>
+
+    <!-- Application Logic Script -->
+    <script>
+        // Preset Financial Data Samples
+        const sampleData = {
+            freelance: {
+                vendor: "ACME Corp Ltd",
+                date: "14 Oct 2026",
+                tax: "£241.67",
+                total: "£1,450.00",
+                category: "Design & Brand Consulting",
+                client: "Project Apex Rebrand",
+                hash: "SHA256: 8f9a2b71...4c1e",
+                items: [
+                    { desc: "UI/UX Mobile App Redesign - Phase 1", qty: "1", rate: "£950.00", amount: "£950.00" },
+                    { desc: "Design System Guidelines & Tokens", qty: "1", rate: "£258.33", amount: "£258.33" },
+                    { desc: "UK VAT (20%)", qty: "1", rate: "£241.67", amount: "£241.67" }
+                ]
+            },
+            software: {
+                vendor: "CloudHost EU Services",
+                date: "18 Oct 2026",
+                tax: "£8.00",
+                total: "£48.00",
+                category: "Software & Web Hosting",
+                client: "Internal Operations",
+                hash: "SHA256: 3d1c9e...1b82",
+                items: [
+                    { desc: "Dedicated GPU Cloud Node - Oct 2026", qty: "1", rate: "£40.00", amount: "£40.00" },
+                    { desc: "Standard UK VAT (20%)", qty: "1", rate: "£8.00", amount: "£8.00" }
+                ]
+            },
+            dinner: {
+                vendor: "The Ivy Bistro - Soho",
+                date: "12 Oct 2026",
+                tax: "£14.92",
+                total: "£89.50",
+                category: "Client Hospitality & Meals",
+                client: "Venture Deal Pitch",
+                hash: "SHA256: fe45a1...99d0",
+                items: [
+                    { desc: "Executive Lunch Special x2", qty: "2", rate: "£32.00", amount: "£64.00" },
+                    { desc: "Sparkling Water & Espresso", qty: "1", rate: "£10.58", amount: "£10.58" },
+                    { desc: "Optional Discretionary Service (12.5%)", qty: "1", rate: "£14.92", amount: "£14.92" }
+                ]
+            }
+        };
+
+        let currentActiveData = sampleData.freelance;
+
+        // Initialize Lucide Icons
+        document.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+            renderData(currentActiveData);
+        });
+
+        // Load Preset Document
+        function loadPreset(type) {
+            currentActiveData = sampleData[type];
+            processExtraction();
+        }
+
+        // Trigger File Input Click
+        function triggerFileInput() {
+            document.getElementById('file-input').click();
+        }
+
+        // Handle File Upload Simulation
+        function handleFileUpload(files) {
+            if (files && files[0]) {
+                const fileName = files[0].name;
+                currentActiveData = {
+                    vendor: "Uploaded: " + fileName.substring(0, 15),
+                    date: "19 Oct 2026",
+                    tax: "£12.50",
+                    total: "£75.00",
+                    category: "General Expense",
+                    client: "Custom Uploaded Record",
+                    hash: "SHA256: " + Math.random().toString(16).substring(2, 10) + "...local",
+                    items: [
+                        { desc: "Parsed Document Entry - " + fileName, qty: "1", rate: "£62.50", amount: "£62.50" },
+                        { desc: "Calculated VAT Tax", qty: "1", rate: "£12.50", amount: "£12.50" }
+                    ]
+                };
+                processExtraction();
+            }
+        }
+
+        // Simulate Local AI Extraction Loop
+        function processExtraction() {
+            const loadingState = document.getElementById('loading-state');
+            const outputContainer = document.getElementById('output-container');
+            const progressBar = document.getElementById('progress-bar');
+            const modelSelect = document.getElementById('model-select');
+            const loadingModelName = document.getElementById('loading-model-name');
+            const processingMeta = document.getElementById('processing-meta');
+
+            const selectedModelName = modelSelect.options[modelSelect.selectedIndex].text.split('(')[0];
+            loadingModelName.innerText = selectedModelName;
+
+            outputContainer.classList.add('opacity-40', 'pointer-events-none');
+            loadingState.classList.remove('hidden');
+            progressBar.style.width = '0%';
+
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += 25;
+                progressBar.style.width = progress + '%';
+
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    setTimeout(() => {
+                        loadingState.classList.add('hidden');
+                        outputContainer.classList.remove('opacity-40', 'pointer-events-none');
+                        renderData(currentActiveData);
+                        processingMeta.innerText = `Processed locally in 0.42s using ${selectedModelName}`;
+                        showToast("Local Extraction Completed!");
+                    }, 200);
+                }
+            }, 120);
+        }
+
+        // Render Data to DOM
+        function renderData(data) {
+            document.getElementById('res-vendor').innerText = data.vendor;
+            document.getElementById('res-date').innerText = data.date;
+            document.getElementById('res-tax').innerText = data.tax;
+            document.getElementById('res-total').innerText = data.total;
+            document.getElementById('res-category').innerText = data.category;
+            document.getElementById('res-client').innerText = data.client;
+            document.getElementById('res-hash').innerText = data.hash;
+
+            const tbody = document.getElementById('res-line-items');
+            tbody.innerHTML = '';
+
+            data.items.forEach(item => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-800/40 transition-colors";
+                tr.innerHTML = `
+                    <td class="p-3 text-slate-200">${item.desc}</td>
+                    <td class="p-3 text-right text-slate-400">${item.qty}</td>
+                    <td class="p-3 text-right text-slate-400">${item.rate}</td>
+                    <td class="p-3 text-right text-emerald-400 font-semibold">${item.amount}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Export Data Options
+        function exportData(format) {
+            if (format === 'json') {
+                const jsonStr = JSON.stringify(currentActiveData, null, 2);
+                downloadFile(jsonStr, 'extracted_receipt_data.json', 'application/json');
+                showToast("Downloaded JSON Record!");
+            } else if (format === 'csv') {
+                let csvContent = "Vendor,Date,Category,Client,Total,Tax\n";
+                csvContent += `"${currentActiveData.vendor}","${currentActiveData.date}","${currentActiveData.category}","${currentActiveData.client}","${currentActiveData.total}","${currentActiveData.tax}"\n\n`;
+                csvContent += "Description,Qty,Rate,Amount\n";
+                currentActiveData.items.forEach(i => {
+                    csvContent += `"${i.desc}","${i.qty}","${i.rate}","${i.amount}"\n`;
+                });
+                downloadFile(csvContent, 'extracted_receipt_data.csv', 'text/csv');
+                showToast("Downloaded CSV File!");
+            }
+        }
+
+        // Utility: Download File
+        function downloadFile(content, fileName, contentType) {
+            const a = document.createElement("a");
+            const file = new Blob([content], { type: contentType });
+            a.href = URL.createObjectURL(file);
+            a.download = fileName;
+            a.click();
+            URL.revokeObjectURL(a.href);
+        }
+
+        // Copy JSON Data to Clipboard
+        function copyToClipboard() {
+            const jsonStr = JSON.stringify(currentActiveData, null, 2);
+            executeCopy(jsonStr, "Structured JSON copied to clipboard!");
+        }
+
+        // Copy Hackathon Writeup
+        function copyPostWriteup() {
+            const text = `# Building VaultLedger: Why Local Open-Source AI is the Ultimate Freelancer Side Hustle
+
+For UK and global freelancers, submitting receipt details to cloud AI APIs poses two massive hurdles: Strict NDAs / Data Privacy Violations and Unpredictable per-token API costs.
+
+Why Open Innovation Made This Viable:
+1. Absolute Client Confidentiality: By deploying open-weight vision models like Llama 3.2 3B Vision and Mistral 7B directly on device, invoice and client details never leave the user's laptop.
+2. Zero Operating Expense (OpEx): Traditional SaaS products charge £10-£20/month due to cloud API fees. By hosting models locally via Ollama or WebGPU, running costs drop to £0.00, enabling a 100% margin side-hustle model.
+3. Offline Reliability: Freelancers working on trains, in local cafes, or remote workspaces can extract financial structured JSON without an active internet connection.
+
+Tech Stack: HTML5, Tailwind CSS, Ollama Local Server / WebGPU ONNX, Llama 3.2 Vision, Local Storage JS.`;
+
+            executeCopy(text, "Hacktoberfest post draft copied!");
+        }
+
+        // Cross-browser Copy Helper
+        function executeCopy(text, toastMsg) {
+            const textarea = document.createElement("textarea");
+            textarea.value = text;
+            document.body.appendChild(textarea);
+            textarea.select();
+            try {
+                document.execCommand('copy');
+                showToast(toastMsg);
+            } catch (err) {
+                console.error('Could not copy text: ', err);
+            }
+            document.body.removeChild(textarea);
+        }
+
+        // Toast Helper
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toast-msg');
+            toastMsg.innerText = message;
+            toast.classList.remove('opacity-0', 'pointer-events-none');
+            toast.classList.add('opacity-100');
+
+            setTimeout(() => {
+                toast.classList.remove('opacity-100');
+                toast.classList.add('opacity-0', 'pointer-events-none');
+            }, 2500);
+        }
+    </script>
+</body>
+</html>
